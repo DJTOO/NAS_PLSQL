@@ -57,14 +57,16 @@ select CURRENTPRICE,nvl(ONEFIFTYAVGPRI,0),nvl(TWOHUNAVGPRI,0) into v_CURRENTPRIC
 end if;
 ----start assesing price level in comaprison to 150 200 avgs ---
 v_prcnt:=trunc(((v_CURRENTPRICE-v_ONEFIFTYAVGPRI)/v_ONEFIFTYAVGPRI)*100,2);
+DBMS_OUTPUT.put_line ('56 line prcnt 2  = ' ||v_prcnt);
 select ID,VALUE into v_ID,v_point from points_config where v_prcnt between VAL_MIN and VAL_MAX and status='Y' and PARAMETER='PRICE_150';
-DBMS_OUTPUT.put_line ('symbol = ' ||in_symbol||' script '||in_ins_script||' insdate : '||v_ins_date||' prcnt is '||v_prcnt);
+DBMS_OUTPUT.put_line ('symbol = ' ||in_symbol||' script '||in_ins_script||' insdate : '||v_ins_date||' prcnt is '||v_prcnt||'points is '||v_point);
 insert into  price_points_log (ID,SYMBOL,INS_SCRIPT,TRADEDATE,INS_DATE,POINTS_CONFIG_ID,LVL_150) values  (Price_points_seq.nextval,in_symbol,in_ins_script,in_tradedate,v_ins_date,v_ID,v_point);
 commit;
 v_prcnt2:=trunc(((v_CURRENTPRICE-v_TWOHUNAVGPRI)/v_TWOHUNAVGPRI)*100,2);
+DBMS_OUTPUT.put_line ('prcnt 2  = ' ||v_prcnt2);
 select ID,VALUE into v_ID,v_point from points_config where v_prcnt2 between VAL_MIN and VAL_MAX and status='Y' and PARAMETER='PRICE_200';
---DBMS_OUTPUT.put_line ('200 lvl points = ' ||v_point);
---DBMS_OUTPUT.put_line ('symbol = ' ||in_symbol||' script '||in_ins_script||' insdate : '||v_ins_date);
+DBMS_OUTPUT.put_line ('200 lvl points = ' ||v_point);
+DBMS_OUTPUT.put_line ('symbol = ' ||in_symbol||' script '||in_ins_script||' insdate : '||v_ins_date);
 update  Price_points_log set LVL_200=v_point where symbol=in_symbol and INS_SCRIPT=in_ins_script and INS_DATE=v_ins_date;
 commit;
 ----END  assesing price level in comaprison to 150 200 avgs ---
