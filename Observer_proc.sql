@@ -32,10 +32,12 @@ create or replace procedure   observer_proc  is
   v_REVENUE number;
   v_SEPS number;
   v_EPS number;
-  
+
   CURSOR observe_cur IS select symbol,INS_PRICE from nasdaq.observer_log ;
   BEGIN
-  insert into nasdaq.observer_log (SYMBOL,INS_DATE,INS_PRICE,INS_FUNDA_POINTS,INS_PRICE_POINTS,CATEGORY,SUBCATEGORY) select SYMBOL,TRADEDATE,CURRENTPRICE,FUNDA_POINTS,PRICE_POINTS,CATEGORY,'FUND+PRICE' from nasdaq.Down_150_log where CATEGORY='R' and (FUNDA_POINTS+PRICE_POINTS/2)>16 and symbol not in (select symbol from  nasdaq.observer_log) and tradedate=(select max(tradedate) from nasdaq_avg) ;
+  insert into observer_log_log select * from observer_log;
+  commit;
+  insert into nasdaq.observer_log (SYMBOL,INS_DATE,INS_PRICE,INS_FUNDA_POINTS,INS_PRICE_POINTS,CATEGORY,SUBCATEGORY) select SYMBOL,TRADEDATE,CURRENTPRICE,FUNDA_POINTS,PRICE_POINTS,CATEGORY,'FUND+PRICE' from nasdaq.Down_150_log where CATEGORY='R' and (FUNDA_POINTS+(3/4)*PRICE_POINTS)>16 and symbol not in (select symbol from  nasdaq.observer_log) and tradedate=(select max(tradedate) from nasdaq_avg) ;
   insert into nasdaq.observer_log (SYMBOL,INS_DATE,INS_PRICE,INS_FUNDA_POINTS,INS_PRICE_POINTS,CATEGORY,SUBCATEGORY) select SYMBOL,TRADEDATE,CURRENTPRICE,FUNDA_POINTS,PRICE_POINTS,CATEGORY,'FUND-FUNDA' from nasdaq.Down_150_log where CATEGORY='R' and (FUNDA_POINTS)>13 and symbol not in (select symbol from  nasdaq.observer_log)  and tradedate=(select max(tradedate) from nasdaq_avg);
   commit;
   open observe_cur;
