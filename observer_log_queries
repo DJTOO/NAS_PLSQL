@@ -1,0 +1,13 @@
+select * from observer_log where rsi <35 
+select * from observer_log where currentprice <BD 
+
+select symbol,tradedate from observer_log where rsi <35 
+intersect
+select symbol,tradedate from observer_log where currentprice <BD 
+
+select * from down_150_log where symbol='ARRY' order by tradedate
+
+
+select symbol,tradedate from down_150_log where rsi <35 and tradedate=(select max(tradedate) from nasdaq_avg) and funda_points>10 and price_points>5
+intersect
+select symbol,tradedate from down_150_log where currentprice <BD and tradedate=(select max(tradedate) from nasdaq_avg) and funda_points>10 and price_points>
