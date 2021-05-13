@@ -1,7 +1,7 @@
 select * from observer_log where rsi <35 
 select * from observer_log where currentprice <BD 
 
-select symbol,tradedate from observer_log where rsi <35 
+select symbol,tradedate from observer_log where rsi <35 and currentprice <BD 
 intersect
 select symbol,tradedate from observer_log where currentprice <BD 
 
