@@ -13,6 +13,7 @@ create or replace procedure   observer_proc  is
   v_avgd_adj number;
   v_rs    number;
   v_funda_points number;
+  v_CATEGORY  varchar2(10);
   v_price_points number;
   v_CURRENTPRICE number;
   v_TRADEDATE    date;
@@ -32,8 +33,10 @@ create or replace procedure   observer_proc  is
   v_REVENUE number;
   v_SEPS number;
   v_EPS number;
+  --v_FUNDA_POINTS number;
+  --v_PRICE_POINTS number;
 
-  CURSOR observe_cur IS select symbol,INS_PRICE from nasdaq.observer_log ;
+  CURSOR observe_cur IS select symbol,INS_PRICE,CATEGORY from nasdaq.observer_log ;
   BEGIN
   insert into observer_log_log select * from observer_log;
   commit;
@@ -42,7 +45,7 @@ create or replace procedure   observer_proc  is
   commit;
   open observe_cur;
   LOOP
-  FETCH observe_cur into vsymbol,v_ins_price;
+  FETCH observe_cur into vsymbol,v_ins_price,v_CATEGORY;
   EXIT WHEN observe_cur%NOTFOUND;
   select count(*) into v_cnt from nasdaq.nasdaq_avg where symbol=vsymbol and tradedate=(select max(tradedate) from nasdaq_avg);
   DBMS_OUTPUT.put_line ('SYMBOL IS =' || vsymbol||'cnt is '||v_cnt);
@@ -52,6 +55,20 @@ create or replace procedure   observer_proc  is
   update nasdaq.observer_log set CURRENTPRICE=v_CURRENTPRICE,TRADEDATE=v_TRADEDATE,SREVENUE=v_SREVENUE,REVENUE=v_REVENUE,SEPS=v_SEPS,EPS=v_EPS,PRCNT_CHANGE=v_PRCNT_CHANGE,PROFIT_LOSS=trunc(((v_CURRENTPRICE-v_ins_price)/v_ins_price)*100,2),FIVEDAYAVGPRI=v_FIVEDAYAVGPRI,BU=v_BU,TWENTYAVGPRI=v_TWENTYAVGPRI,BD=v_BD,FIFTYAVGPRI=v_FIFTYAVGPRI,ONEFIFTYAVGPRI=v_ONEFIFTYAVGPRI,TWOHUNAVGPRI=v_TWOHUNAVGPRI,CURRENTVOL=v_CURRENTVOL,FIVEDAYVOL=v_FIVEDAYVOL,TWENTYAVGVOL=v_TWENTYAVGVOL,RSI=v_RSI where symbol=vsymbol;
   commit;
   end if;
+  select count(*) into v_cnt from nasdaq.down_150_log where symbol=vsymbol and tradedate=(select max(tradedate) from nasdaq_avg);
+  if (v_cnt=1) then
+  select FUNDA_POINTS,PRICE_POINTS into v_FUNDA_POINTS,v_PRICE_POINTS from nasdaq.down_150_log where symbol=vsymbol and tradedate=(select max(tradedate) from nasdaq_avg);
+  update nasdaq.observer_log set CURR_FUNDA_POINTS=v_FUNDA_POINTS,CURR_PRICE_POINTS=v_PRICE_POINTS  where symbol=vsymbol;
+  commit;
+  else
+  if (v_CATEGORY='R') then 
+  v_funda_points:=Funda_point_fn(symbol=>vsymbol,ins_script=>'R150');
+  v_price_points:=Price_point_fn(symbol=>vsymbol,ins_script=>'R150-Price');
+  update nasdaq.observer_log set CURR_FUNDA_POINTS=v_funda_points,CURR_PRICE_POINTS=v_price_points  where symbol=vsymbol;
+  commit;
+  end if;
+  end if;
+  
   END LOOP;
   close observe_cur;
 END;

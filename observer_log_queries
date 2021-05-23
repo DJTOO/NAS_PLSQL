@@ -11,3 +11,5 @@ select * from down_150_log where symbol='ARRY' order by tradedate
 select symbol,tradedate from down_150_log where rsi <35 and tradedate=(select max(tradedate) from nasdaq_avg) and funda_points>10 and price_points>5
 intersect
 select symbol,tradedate from down_150_log where currentprice <BD and tradedate=(select max(tradedate) from nasdaq_avg) and funda_points>10 and price_points>
+
+select currentprice,min(tradedate)  from nasdaq_avg where (symbol,currentprice) in (select symbol,min(currentprice) from nasdaq_avg where symbol='SRPT' AND TRADEDATE>(SELECT MAX(TRADEDATE)-365  FROM NASDAQ_AVG )  GROUP BY SYMBOL) group by currentprice;
